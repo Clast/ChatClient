@@ -61,7 +61,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
     
     String cResponse = unpack(packet);
 
-    
+    System.out.println(cResponse);
     
     
     
