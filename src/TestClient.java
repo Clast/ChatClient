@@ -40,6 +40,11 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
     int rand = Integer.parseInt(s);
     int key = rand + secretkey;
 
+    StringBuilder sb = new StringBuilder();
+	sb.append(rand);
+	sb.append(secretkey);
+	key = Integer.parseInt(sb.toString());
+	
     
     byte[] password = BigInteger.valueOf(key).toByteArray();
 	
