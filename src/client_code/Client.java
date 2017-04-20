@@ -1,3 +1,4 @@
+package client_code;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
@@ -18,7 +19,7 @@ public class Client{
 	private byte[] buffer;
 	private String username = "UserA";
 	private String clientID;
-	private int secretkey = 123456;
+	private String secretkey = "78116FAE48C81446C41E9A3062E6206F";
 
 	Client ()throws SocketException, UnknownHostException{
 		buffer = new byte[1024];
@@ -38,17 +39,17 @@ public class Client{
 		// receive auth
 		datagramSocket.receive(packet);
 		String s = unpack(packet);
-    
     	int rand = Integer.parseInt(s);
-    	int key = rand + secretkey;
+    	
+    	String key = rand + secretkey;
 
     	StringBuilder sb = new StringBuilder();
 		sb.append(rand);
 		sb.append(secretkey);
-		key = Integer.parseInt(sb.toString());
+
 	
     
-    	byte[] password = BigInteger.valueOf(key).toByteArray();
+    	byte[] password = sb.toString().getBytes();
 	
 		MessageDigest md = MessageDigest.getInstance("MD5");
     	md.update(password);	
