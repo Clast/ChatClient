@@ -1,3 +1,6 @@
+package client_code;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
@@ -5,9 +8,18 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.ShortBufferException;
 
 
 public class Client{
@@ -19,6 +31,7 @@ public class Client{
 	private String username = "UserA";
 	private String clientID;
 	private int secretkey = 123456;
+	private BouncyEncryption encryptor = null;
 
 	Client ()throws SocketException, UnknownHostException{
 		buffer = new byte[1024];
@@ -27,7 +40,7 @@ public class Client{
 		packet = new DatagramPacket(buffer, buffer.length, address, 8888);
 	}
 
-	public void sendLogin()throws IOException, NoSuchAlgorithmException{
+	public void sendLogin()throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
 		// send "Hello" msg to SERVER
 		System.out.println("Sending HELLO");
 		byte[] buffer = username.getBytes();
@@ -46,6 +59,11 @@ public class Client{
 		sb.append(rand);
 		sb.append(secretkey);
 		key = Integer.parseInt(sb.toString());
+		
+		encryptor = new BouncyEncryption(rand,secretkey);
+		encryptor.InitCiphers();
+		
+		
 	
     
     	byte[] password = BigInteger.valueOf(key).toByteArray();
@@ -66,11 +84,11 @@ public class Client{
             );
     	datagramSocket.receive(packet);
     
-    	String cResponse = unpack(packet);
-
-    	System.out.println(cResponse);
+    	String strdecrypt = encryptor.Decrypt(packet.getData());
+    	
+    	System.out.println(strdecrypt);
 	}
-
+                 
 	public void chatRequest(String client){
 		// request connection with 2nd chat client
 
@@ -116,7 +134,7 @@ public class Client{
 	);
 	return str;
 	}
-public static void main(String[] args) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException  {
+public static void main(String[] args) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException  {
 
 	Client a = new Client();
 
