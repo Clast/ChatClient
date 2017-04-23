@@ -21,6 +21,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class Client{
 
@@ -38,6 +40,8 @@ public class Client{
 		datagramSocket = new DatagramSocket();
 		address = InetAddress.getLocalHost();
 		packet = new DatagramPacket(buffer, buffer.length, address, 8888);
+		Security.addProvider(new BouncyCastleProvider());
+
 	}
 
 	public void sendLogin()throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
@@ -89,23 +93,36 @@ public class Client{
     	System.out.println(strdecrypt);
 	}
                  
-	public void chatRequest(String client){
+	public void chatRequest(String client) throws ShortBufferException, IllegalBlockSizeException,
+	BadPaddingException, IOException{
 		// request connection with 2nd chat client
-		buffer = encryptor.Encrypt(client);		
-		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 4445);
-		datagramSocket.send(packet);
+		try{
+		byte [] buffer = encryptor.Encrypt(client);		
+		// send TCP packet
+
 		// check to see if 2nd client in conencted to Server and avaliable
-		datagramSocket.receive(packet);
-		String response = encryptor.Decrypt(packet.getData());
-		
+		// receive TCP packet response
+
+		//String response = encryptor.Decrypt(packet.getData());
+
 		// if response == online
 		System.out.println ("Chat Started with " + client);
 		// else
 		System.out.println ("Client " + client + "is not avaliable!");
+		}
+		catch (ShortBufferException e) {
+		}
+		catch (IllegalBlockSizeException e){
+		}
+		catch (BadPaddingException e){
+		}
+		catch (IOException e){
+
+		}
 	}
 
 	public void sendMSG(String msg){
-		// send message to
+		// send message to server
 	}
 
 	public void rcvMSG(DatagramPacket msg) throws IOException{
@@ -125,7 +142,7 @@ public class Client{
 	}
 
 	public void endChat(){
-			// end chat with 2nd client, but still maintain connection with UDP.
+			// end chat with 2nd client, but still maintain UDP connection.
 	}
 
 	public void sendQuit(){
