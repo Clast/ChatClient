@@ -32,6 +32,7 @@ public class Client{
 	private String clientID;
 	private int secretkey = 123456;
 	private BouncyEncryption encryptor = null;
+	private int cookie; 
 
 	Client ()throws SocketException, UnknownHostException{
 		buffer = new byte[1024];
@@ -87,6 +88,9 @@ public class Client{
     	String strdecrypt = encryptor.Decrypt(packet.getData());
     	
     	System.out.println(strdecrypt);
+    	
+    	cookie = Integer.parseInt(strdecrypt);
+    	
 	}
                  
 	public void chatRequest(String client){
