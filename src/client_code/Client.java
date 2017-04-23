@@ -91,8 +91,17 @@ public class Client{
                  
 	public void chatRequest(String client){
 		// request connection with 2nd chat client
-
+		buffer = encryptor.Encrypt(client);		
+		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 4445);
+		datagramSocket.send(packet);
+		// check to see if 2nd client in conencted to Server and avaliable
+		datagramSocket.receive(packet);
+		String response = encryptor.Decrypt(packet.getData());
+		
+		// if response == online
 		System.out.println ("Chat Started with " + client);
+		// else
+		System.out.println ("Client " + client + "is not avaliable!");
 	}
 
 	public void sendMSG(String msg){
