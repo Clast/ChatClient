@@ -1,14 +1,8 @@
 package client_code;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Scanner;
 import java.math.BigInteger;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -27,15 +21,20 @@ public class Client{
 
 	private DatagramSocket datagramSocket ;
 	private InetAddress address;
+	private int port;
 	private DatagramPacket packet;
 	private byte[] buffer;
 	private String username = "UserA";
 	private String clientID;
 	private int secretkey = 123456;
 	private BouncyEncryption encryptor = null;
+	private int cookie;
 	private boolean connected;
 	private boolean serverConnect;
 	private Scanner scanner;
+	private Socket clientSocket;
+	private BufferedReader 	in 				= null;
+	private PrintWriter     out 			= null;
 
 	Client ()throws SocketException, UnknownHostException{
 		buffer = new byte[1024];
@@ -57,7 +56,7 @@ public class Client{
 		datagramSocket.receive(packet);
 		String s = unpack(packet);
 		// check to see if user exists on the server
-    	if (!s.contains("User")){
+    if (!s.contains("User")){
     	int rand = Integer.parseInt(s);
     	int key = rand + secretkey;
 
@@ -91,41 +90,61 @@ public class Client{
     	datagramSocket.receive(packet);
     
     	String strdecrypt = encryptor.Decrypt(packet.getData());
-   
+    	String [] str = strdecrypt.split(",");
+   		cookie = Integer.parseInt(str[0]);
     	System.out.println(strdecrypt);
+
+    	// establish TCP connection
+    	clientSocket = new Socket("localhost", Integer.parseInt(str[1]));
+    	try {in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));} 	catch (IOException e) {System.out.println("In TCP_Welcome_Thread: Unable to create Buffered Reader");e.printStackTrace();}
+		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 					catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
+		out.println("CONNECT\u001e" + cookie);
+
+		System.out.println(in.readLine());
     	serverConnect = true;
     }
     else{
-    	System.out.println("User DNE");
+    	/*System.out.println("User DNE");
     	// exit
+    	datagramSocket.receive(packet);
+    	String strdecrypt = encryptor.Decrypt(packet.getData());
+    	System.out.println(strdecrypt);
     	System.exit(0);
+    	*/
     }
 
 	}
                  
 	public void chatRequest()throws IOException{
 		String second_client;
+		//Create the input and output streams so that we can communicate with the client
+		
 		// request connection with 2nd chat client
 		 do {
 		 	second_client = scanner.nextLine();
 		 	// use bouncy encryption???
 
-
+		 	out.println("CHAT_REQUEST\u001e" + second_client);
+		 	System.out.println("dsf1");
+		 	String msgRcv = in.readLine();
+		 	System.out.println(msgRcv);
+		 	String [] msgSplit = msgRcv.split("\u001e");
+		 	/*
 		 	DatagramPacket packet = Packet_Helpers.stringToPacket(second_client, address, 4445);
 		 	datagramSocket.send(packet);
-		 	// receive something from server 
+		 	// receive something from server and decrypt
+		 	datagramSocket.receive(packet);
+		 	String a = unpack(packet);
+		 	String [] msgSplit = a.split("\u001e");
+		 	// CHAT_STARTED\u001e{SESSION_ID}\u001e{CLIENT_B}*/
+		 	if (msgSplit[0].equals("CHAT_STARTED")){
+		 		System.out.println(msgSplit[0] + " " + msgSplit[1] + " " + msgSplit[2]);
+		 		connected = true;
+		 	}	 
+		 	else 
+		 		System.out.println("User DNE, try again");
 
-		 	//if 2nd client is avaliable
-		 		// connected = true
-
-		 	// else "User DNE, try again"
 		 }while (!connected);
-
-
-
-		
-
-		System.out.println ("Chat Started with " + second_client);
 		
 	}
 
@@ -143,17 +162,8 @@ public class Client{
 			else
 				{
 					// else send msg to server
-					byte [] encrypteddata = null;
-					encrypteddata = encryptor.Encrypt(msg);
-					packet = Packet_Helpers.arrayToPacket(encrypteddata, address, 4445);
-
-					try {
-						datagramSocket.send(packet);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
+					//encrpyton
+					out.println(msg);
 				}
 			}
 			 while (true);
@@ -202,7 +212,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 
 	Client a = new Client();
 	a.sendLogin();
-
+	a.chatRequest();
 }
 
 }
