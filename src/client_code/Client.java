@@ -1,6 +1,8 @@
 package client_code;
 import java.io.*;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.math.BigInteger;
 import java.net.*;
 import java.nio.charset.Charset;
@@ -24,7 +26,7 @@ public class Client{
 	private int port;
 	private DatagramPacket packet;
 	private byte[] buffer;
-	private String username = "UserA";
+	private String username = null;
 	private String clientID;
 	private int secretkey = 123456;
 	private BouncyEncryption encryptor = null;
@@ -35,6 +37,8 @@ public class Client{
 	private Socket clientSocket;
 	private BufferedReader 	in 				= null;
 	private PrintWriter     out 			= null;
+	private BlockingQueue<InternalMessage> actionQueue = new LinkedBlockingQueue<InternalMessage>();
+	boolean inChat	=	false;
 
 	Client ()throws SocketException, UnknownHostException{
 		buffer = new byte[1024];
@@ -44,10 +48,10 @@ public class Client{
 		scanner = new Scanner (System.in);
 	}
 
-	public void sendLogin()throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
+	public void sendLogin(String user)throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
 		// send "Hello" msg to SERVER
 		System.out.println("Sending HELLO");
-		byte[] buffer = username.getBytes();
+		byte[] buffer = user.getBytes();
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 4445);
 		// send packet
 		datagramSocket.send(packet);
@@ -97,7 +101,7 @@ public class Client{
     	// establish TCP connection
     	clientSocket = new Socket("localhost", Integer.parseInt(str[1]));
     	try {in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));} 	catch (IOException e) {System.out.println("In TCP_Welcome_Thread: Unable to create Buffered Reader");e.printStackTrace();}
-		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 					catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
+		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 						catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
 		out.println("CONNECT\u001e" + cookie);
 
 		System.out.println(in.readLine());
@@ -208,6 +212,24 @@ public class Client{
 	);
 	return str;
 	}
+	
+	private void control(Client a) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException
+	{
+		while(true)
+		{
+			InternalMessage action = null;
+			try {action = actionQueue.take();} catch (InterruptedException e) {e.printStackTrace();}
+			
+			switch(action.getAction())
+			{
+			case	"CHAT_REQUEST":	
+									break;
+			}
+			
+			
+		}
+	}
+	
 public static void main(String[] args) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException  {
 
 	Client a = new Client();
