@@ -98,6 +98,7 @@ public class Client{
    		cookie = Integer.parseInt(str[0]);
     	System.out.println(strdecrypt);
 
+    	
     	// establish TCP connection
     	clientSocket = new Socket("localhost", Integer.parseInt(str[1]));
     	try {in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));} 	catch (IOException e) {System.out.println("In TCP_Welcome_Thread: Unable to create Buffered Reader");e.printStackTrace();}
@@ -233,7 +234,7 @@ public class Client{
 public static void main(String[] args) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException  {
 
 	Client a = new Client();
-	a.sendLogin();
+	a.sendLogin("UserA");
 	a.chatRequest();
 }
 
