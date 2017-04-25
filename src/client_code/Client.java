@@ -29,7 +29,7 @@ public class Client{
 	private String 							username 				= 	null;
 	private String 							clientID;
 	private int 							secretkey 				= 	123456;
-	private BouncyEncryption 				encryptor 				= 	null;
+	//private BouncyEncryption 				encryptor 				= 	null;
 	private int 							cookie;
 	private static boolean 						connected;
 	private boolean 						serverConnect;
@@ -73,8 +73,8 @@ public class Client{
 		sb.append(secretkey);
 		key = Integer.parseInt(sb.toString());
 		
-		encryptor = new BouncyEncryption(rand,secretkey);
-		encryptor.InitCiphers();
+		//encryptor = new BouncyEncryption(rand,secretkey);
+		//encryptor.InitCiphers();
 		
 		
 	
@@ -109,7 +109,7 @@ public class Client{
 		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 						catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
 		out.println("CONNECT\u001e" + cookie);
 
-		System.out.println(encryptor.Decrypt(in.readLine().getBytes()));
+		System.out.println(in.readLine().getBytes());
     	serverConnect = true;
     	return 1;
     }
@@ -117,7 +117,7 @@ public class Client{
     	System.out.println("User DNE");
     	// exit
     	datagramSocket.receive(packet);
-    	String strdecrypt = encryptor.Decrypt(packet.getData());
+    	String strdecrypt = packet.getData().toString();
     	System.out.println(strdecrypt);
     	return -1;
     	
@@ -307,7 +307,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 			if(a.sendLogin(username) > 0)
 			{
 				connected 				= true;
-				a.message_parser_thread = new MessageParser(a.actionQueue, a.in, a.encryptor);
+				a.message_parser_thread = new MessageParser(a.actionQueue, a.in,null);
 				a.cli_thread			= new CLI_Thread(a.actionQueue);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
@@ -343,7 +343,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 						case"CHAT_STARTED":	a.currentChatPartner 	= temp.getClient();
 											a.currentSessID			= temp.getSessionID();
 											System.out.println("Chat session " + a.currentSessID + " with " + a.currentChatPartner + " has begun.");
-											a.chat_state_machine(a.actionQueue,a.out,a.encryptor);
+											a.chat_state_machine(a.actionQueue,a.out,null);
 											break;
 											
 						case"UNREACHABLE": 	System.out.println("User " + a.currentChatPartner + " is unreachable.");
