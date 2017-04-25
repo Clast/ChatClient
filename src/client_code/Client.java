@@ -21,24 +21,28 @@ import javax.crypto.ShortBufferException;
 
 public class Client{
 
-	private DatagramSocket datagramSocket ;
-	private InetAddress address;
-	private int port;
-	private DatagramPacket packet;
-	private byte[] buffer;
-	private String username = null;
-	private String clientID;
-	private int secretkey = 123456;
-	private BouncyEncryption encryptor = null;
-	private int cookie;
-	private boolean connected;
-	private boolean serverConnect;
-	private Scanner scanner;
-	private Socket clientSocket;
-	private BufferedReader 	in 				= null;
-	private PrintWriter     out 			= null;
-	private BlockingQueue<InternalMessage> actionQueue = new LinkedBlockingQueue<InternalMessage>();
-	boolean inChat	=	false;
+	private DatagramSocket 					datagramSocket ;
+	private InetAddress 					address;
+	private int 							port;
+	private DatagramPacket 					packet;
+	private byte[] 							buffer;
+	private String 							username 				= 	null;
+	private String 							clientID;
+	private int 							secretkey 				= 	123456;
+	private BouncyEncryption 				encryptor 				= 	null;
+	private int 							cookie;
+	private static boolean 						connected;
+	private boolean 						serverConnect;
+	private Scanner 						scanner 				= 	new Scanner(System.in);
+	private MessageParser 					message_parser_thread 	= 	null;
+	private CLI_Thread 						cli_thread 				= 	null;
+	private Socket 							clientSocket;
+	private BufferedReader 					in 						= 	null;
+	private PrintWriter     				out 					= 	null;
+	private BlockingQueue<InternalMessage> 	actionQueue 			= 	new LinkedBlockingQueue<InternalMessage>();
+	boolean 								inChat					=	false;
+	private	String							currentSessID			= 	null;
+	private String							currentChatPartner		= 	null;
 
 	Client ()throws SocketException, UnknownHostException{
 		buffer = new byte[1024];
@@ -48,7 +52,7 @@ public class Client{
 		scanner = new Scanner (System.in);
 	}
 
-	public void sendLogin(String user)throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
+	public int sendLogin(String user)throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
 		// send "Hello" msg to SERVER
 		System.out.println("Sending HELLO");
 		byte[] buffer = user.getBytes();
@@ -105,17 +109,18 @@ public class Client{
 		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 						catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
 		out.println("CONNECT\u001e" + cookie);
 
-		System.out.println(in.readLine());
+		System.out.println(encryptor.Decrypt(in.readLine().getBytes()));
     	serverConnect = true;
+    	return 1;
     }
     else{
-    	/*System.out.println("User DNE");
+    	System.out.println("User DNE");
     	// exit
     	datagramSocket.receive(packet);
     	String strdecrypt = encryptor.Decrypt(packet.getData());
     	System.out.println(strdecrypt);
-    	System.exit(0);
-    	*/
+    	return -1;
+    	
     }
 
 	}
@@ -213,7 +218,7 @@ public class Client{
 	);
 	return str;
 	}
-	
+	/*
 	private void control(Client a) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException
 	{
 		while(true)
@@ -230,12 +235,131 @@ public class Client{
 			
 		}
 	}
+	*/
 	
-public static void main(String[] args) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException  {
+	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out,BouncyEncryption encryptor ) throws InterruptedException, IOException
+	{
+		boolean isChatting = true;
+		while(isChatting)
+		{
+			InternalMessage temp = null;
+			temp = actionQueue.take();
+			
+			
+				if(temp.isInternal())
+				{
+					//Messages from user
+					switch(temp.getAction())
+					{
+					case "CHAT":		try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										break;
+					case "LOG_OFF":		try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										try {out.println(encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										out	.close();
+										in	.close();
+										out = null;
+										in 	= null;
+										isChatting = false;
+										connected = false;
+										break;
+					case "END_REQUEST":	try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										isChatting = false;
+										break;
+					case "HISTORY_REQ":	try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										break;
+					}
+				}
+				else
+				{
+					//messages from server
+					switch(temp.getAction())
+					{
+					case "CHAT":			System.out.println(currentChatPartner + ": " + temp.getData());
+											break;
+					case "END_NOTIF":		System.out.println("Chat session " + currentSessID + " with " + currentChatPartner + " has ended.");
+											currentSessID 		= null;
+											currentChatPartner 	= null;
+											isChatting 			= false;
+											break;
+					case "HISTORY_RESP":	System.out.println(temp.getData());
+											break;
+					}
+				}
+			
+			
+		}
+	}
+	
+	
+	
+public static void main(String[] args) throws UnknownHostException, SocketException, IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, InterruptedException  {
 
 	Client a = new Client();
-	a.sendLogin("UserA");
-	a.chatRequest();
+	
+	while(true)
+	{
+		System.out.println("Type \"Log On\" to begin connection to Server.");
+		String input = a.scanner.nextLine();
+		if(input.toUpperCase().equals("LOG ON"))
+		{
+			System.out.println("Enter your Username: ");
+			String username = a.scanner.nextLine();
+			if(a.sendLogin(username) > 0)
+			{
+				connected 				= true;
+				a.message_parser_thread = new MessageParser(a.actionQueue, a.in, a.encryptor);
+				a.cli_thread			= new CLI_Thread(a.actionQueue);
+				a.message_parser_thread	.start();
+				a.cli_thread			.start();
+				
+				while(a.connected)
+				{
+					InternalMessage temp = a.actionQueue.take();
+					
+					if(temp.isInternal())
+					{
+						switch(temp.getAction())
+						{
+							case "CHAT_REQUEST":	a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));
+													a.currentChatPartner = temp.getClient();
+													break;
+	
+							case "HISTORY_REQ":		try {a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+													break;
+
+							case "LOG_OFF":			try {a.out.println(a.encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+													a.out		.close();
+													a.in		.close();
+													a.out 		= null;
+													a.in 		= null;
+													connected 	= false;
+													break;
+						}
+					}
+					else
+					{
+						switch(temp.getAction())
+						{
+						case"CHAT_STARTED":	a.currentChatPartner 	= temp.getClient();
+											a.currentSessID			= temp.getSessionID();
+											System.out.println("Chat session " + a.currentSessID + " with " + a.currentChatPartner + " has begun.");
+											a.chat_state_machine(a.actionQueue,a.out,a.encryptor);
+											break;
+											
+						case"UNREACHABLE": 	System.out.println("User " + a.currentChatPartner + " is unreachable.");
+											a.currentChatPartner = null;
+											break;
+					
+						case"HISTORY_RESP":	System.out.println(temp.getData());
+											break;
+						}
+					}
+				}
+			}
+		}
+		//a.sendLogin("UserA");
+		//a.chatRequest();
+	}
 }
 
 }
