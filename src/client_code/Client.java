@@ -59,7 +59,7 @@ public class Client{
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 4445);
 		// send packet
 		datagramSocket.send(packet);
-
+		Integer temp1 = 5000;
 		// receive auth
 		datagramSocket.receive(packet);
 		String s = unpack(packet);
@@ -97,7 +97,7 @@ public class Client{
             );
     	datagramSocket.receive(packet);
     
-    	String strdecrypt = encryptor.Decrypt(packet.getData());
+    	String strdecrypt = packet.getData().toString();
     	String [] str = strdecrypt.split(",");
    		cookie = Integer.parseInt(str[0]);
     	System.out.println(strdecrypt);
@@ -251,10 +251,10 @@ public class Client{
 					//Messages from user
 					switch(temp.getAction())
 					{
-					case "CHAT":		try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+					case "CHAT":		out.println(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData());
 										break;
-					case "LOG_OFF":		try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
-										try {out.println(encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+					case "LOG_OFF":		out.println(temp.getAction() + "\u001e" + currentSessID);
+										out.println("DISCONNECT");
 										out	.close();
 										in	.close();
 										out = null;
@@ -262,10 +262,10 @@ public class Client{
 										isChatting = false;
 										connected = false;
 										break;
-					case "END_REQUEST":	try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+					case "END_REQUEST":	out.println(temp.getAction() + "\u001e" + currentSessID);
 										isChatting = false;
 										break;
-					case "HISTORY_REQ":	try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+					case "HISTORY_REQ":	out.println(temp.getAction() + "\u001e" + temp.getClient());
 										break;
 					}
 				}
@@ -320,14 +320,14 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 					{
 						switch(temp.getAction())
 						{
-							case "CHAT_REQUEST":	a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));
+							case "CHAT_REQUEST":	a.out.println(temp.getAction() + "\u001e" + temp.getClient());
 													a.currentChatPartner = temp.getClient();
 													break;
 	
-							case "HISTORY_REQ":		try {a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+							case "HISTORY_REQ":		a.out.println(temp.getAction() + "\u001e" + temp.getClient());
 													break;
 
-							case "LOG_OFF":			try {a.out.println(a.encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+							case "LOG_OFF":			a.out.println("DISCONNECT");
 													a.out		.close();
 													a.in		.close();
 													a.out 		= null;
