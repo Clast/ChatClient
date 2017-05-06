@@ -4,8 +4,7 @@ import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.math.BigInteger;
-import java.net.*;
-import java.nio.charset.Charset;
+import java.net.*;import java.nio.ByteBuffer;import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -31,7 +30,7 @@ public class Client{
 	private int 							secretkey 				= 	123456;
 	private BouncyEncryption 				encryptor 				= 	null;
 	private int 							cookie;
-	private static boolean 						connected;
+	private static boolean 					connected;
 	private boolean 						serverConnect;
 	private Scanner 						scanner 				= 	new Scanner(System.in);
 	private MessageParser 					message_parser_thread 	= 	null;
@@ -251,22 +250,22 @@ public class Client{
 					//Messages from user
 					switch(temp.getAction())
 					{
-					case "CHAT":		try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
-										break;
-					case "LOG_OFF":		try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
-										try {out.println(encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+					case "CHAT":		//try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}										try {sendMessage(this.clientSocket.getOutputStream(), encryptor.Encrypt(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e1) {e1.printStackTrace();}
+																				break;
+					case "LOG_OFF":		//try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										//try {out.println(encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}										try {sendMessage(this.clientSocket.getOutputStream(), encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e1) {e1.printStackTrace();}										try {sendMessage(this.clientSocket.getOutputStream(), encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e1) {e1.printStackTrace();}
 										out	.close();
 										in	.close();
 										out = null;
-										in 	= null;
+										in 	= null;																				this.clientSocket.close();
 										isChatting = false;
 										connected = false;
 										break;
-					case "END_REQUEST":	try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
-										isChatting = false;
+					case "END_REQUEST":	//try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										try {sendMessage(this.clientSocket.getOutputStream(), encryptor.Encrypt(temp.getAction() + "\u001e" + currentSessID));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e1) {e1.printStackTrace();}										isChatting = false;
 										break;
-					case "HISTORY_REQ":	try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
-										break;
+					case "HISTORY_REQ":	//try {out.println(encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+										try {sendMessage(this.clientSocket.getOutputStream(), encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e1) {e1.printStackTrace();}										break;
 					}
 				}
 				else
@@ -307,7 +306,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 			if(a.sendLogin(username) > 0)
 			{
 				connected 				= true;
-				a.message_parser_thread = new MessageParser(a.actionQueue, a.in, a.encryptor);
+				a.message_parser_thread = new MessageParser(a.actionQueue, a.in, a.encryptor, a.clientSocket.getInputStream() );
 				a.cli_thread			= new CLI_Thread(a.actionQueue);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
@@ -320,14 +319,14 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 					{
 						switch(temp.getAction())
 						{
-							case "CHAT_REQUEST":	a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));
+							case "CHAT_REQUEST":	//a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));													sendMessage(a.clientSocket.getOutputStream(), a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));													
 													a.currentChatPartner = temp.getClient();
 													break;
 	
-							case "HISTORY_REQ":		try {a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+							case "HISTORY_REQ":		//try {a.out.println(a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}													sendMessage(a.clientSocket.getOutputStream(), a.encryptor.Encrypt(temp.getAction() + "\u001e" + temp.getClient()));
 													break;
 
-							case "LOG_OFF":			try {a.out.println(a.encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}
+							case "LOG_OFF":			//try {a.out.println(a.encryptor.Encrypt("DISCONNECT"));} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException| IOException e) {e.printStackTrace();}													sendMessage(a.clientSocket.getOutputStream(), a.encryptor.Encrypt("DISCONNECT"));
 													a.out		.close();
 													a.in		.close();
 													a.out 		= null;
@@ -360,5 +359,5 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 		//a.sendLogin("UserA");
 		//a.chatRequest();
 	}
-}}
+}private static void sendMessage(OutputStream out, byte[] message){	//Get the length of the message and place it into a byte array we can push through the stream	byte[] messageLen = ByteBuffer.allocate(Integer.BYTES).putInt(message.length).array();		//Send the length of the message first, then send the actual message	try {out.write(messageLen);} 	catch (IOException e) {System.out.println("IN CLIENT: Could not push length of message through output stream");e.printStackTrace();}	try {out.write(message);} 		catch (IOException e) {System.out.println("IN CLIENT: Could not push message through output stream");			e.printStackTrace();}}}
 

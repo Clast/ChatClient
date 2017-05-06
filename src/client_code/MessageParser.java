@@ -2,20 +2,28 @@ package client_code;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.ShortBufferException;
 
 public class MessageParser extends Thread
 {
 	BlockingQueue<InternalMessage> 	outQueue 		= null;
 	private BouncyEncryption 		encryptor 		= null;
 	private BufferedReader 			in 				= null;
+	private InputStream 			inStream		= null;
 	
-	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, BouncyEncryption encryptor)
+	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, BouncyEncryption encryptor, InputStream inStream)
 	{
-		this.encryptor = encryptor;
+		this.encryptor 	= 	encryptor;
 		this.outQueue 	= 	outQueue;
 		this.in			= 	in;
+		this.inStream	=	inStream;
 	}
 	
 	public void run()
@@ -23,7 +31,10 @@ public class MessageParser extends Thread
 		while(true)
 		{
 			String mess = null;
-			try {mess = in.readLine();} catch (IOException e1) {e1.printStackTrace();}
+			byte[] message = null;
+			message = readFromStream(inStream);
+			//try {mess = in.readLine();} catch (IOException e1) {e1.printStackTrace();}
+			try {mess = encryptor.Decrypt(message);} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException | IOException e1) {e1.printStackTrace();}
 			String[] splitMess = mess.split("\u001e");
 			
 			switch(splitMess[0])
@@ -40,5 +51,19 @@ public class MessageParser extends Thread
 								break;
 			}
 		}
+	}
+	
+	private byte[] readFromStream(java.io.InputStream inputStream)
+	{
+		byte[] messLength = new byte[4];
+		
+		try {inputStream.read(messLength);} catch (IOException e) {System.out.println("In Message_Parser: Could not read Message length from input stream");e.printStackTrace();}
+		
+		byte[] message = new byte[ByteBuffer.wrap(messLength).getInt()];
+		
+		try {inputStream.read(message);} catch (IOException e) {System.out.println("In Message_Parser: Could not read Message from input stream");e.printStackTrace();}
+		
+		return message;
+		
 	}
 }
