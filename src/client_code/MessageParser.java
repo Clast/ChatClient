@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.BlockingQueue;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.ShortBufferException;
+
 public class MessageParser extends Thread
 {
 	BlockingQueue<InternalMessage> 	outQueue 		= null;
@@ -22,9 +26,12 @@ public class MessageParser extends Thread
 	{
 		while(true)
 		{
-			String mess = null;
+			String mess 			= null;
+			String messDecrypted 	= null;
+			
 			try {mess = in.readLine();} catch (IOException e1) {e1.printStackTrace();}
-			String[] splitMess = mess.split("\u001e");
+			try {messDecrypted = encryptor.Decrypt(mess.getBytes());} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException | IOException e1) {e1.printStackTrace();}
+			String[] splitMess = messDecrypted.split("\u001e");
 			
 			switch(splitMess[0])
 			{
