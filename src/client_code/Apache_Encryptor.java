@@ -20,6 +20,7 @@ import org.apache.commons.crypto.cipher.CryptoCipher;
 import org.apache.commons.crypto.cipher.CryptoCipherFactory;
 import org.apache.commons.crypto.cipher.CryptoCipherFactory.CipherProvider;
 import org.apache.commons.crypto.utils.Utils;
+import org.jasypt.util.binary.BasicBinaryEncryptor;
 
 
 
@@ -35,6 +36,7 @@ public class Apache_Encryptor
 	final 	String 			transform 	= "AES/CBC/PKCS5Padding";
 	private CryptoCipher 	encipher 	= null;
 	private CryptoCipher 	decipher 	= null;
+	BasicBinaryEncryptor binaryEncryptor = null;
 	
 	public Apache_Encryptor(int rand, int sk) throws NoSuchAlgorithmException, IOException
 	{

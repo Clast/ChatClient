@@ -28,7 +28,7 @@ public class Client{
 	private String 							username 				= 	null;
 	private String 							clientID;
 	private int 							secretkey 				= 	123456;
-	private Apache_Encryptor 				encryptor 				= 	null;
+	private Jasypt_Encryptor 				encryptor 				= 	null;
 	private int 							cookie;
 	private static boolean 					connected;
 	private boolean 						serverConnect;
@@ -72,7 +72,7 @@ public class Client{
 		sb.append(secretkey);
 		key = Integer.parseInt(sb.toString());
 		
-		encryptor = new Apache_Encryptor(rand,secretkey);
+		encryptor = new Jasypt_Encryptor(rand,secretkey);
 		
 		
 	
@@ -235,7 +235,7 @@ public class Client{
 	}
 	*/
 	
-	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out,Apache_Encryptor encryptor ) throws InterruptedException, IOException
+	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out,Jasypt_Encryptor encryptor ) throws InterruptedException, IOException
 	{
 		boolean isChatting = true;
 		while(isChatting)

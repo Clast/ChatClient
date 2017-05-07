@@ -14,11 +14,11 @@ import javax.crypto.ShortBufferException;
 public class MessageParser extends Thread
 {
 	BlockingQueue<InternalMessage> 	outQueue 		= null;
-	private Apache_Encryptor 		encryptor 		= null;
+	private Jasypt_Encryptor 		encryptor 		= null;
 	private BufferedReader 			in 				= null;
 	private InputStream 			inStream		= null;
 	
-	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, Apache_Encryptor encryptor, InputStream inStream)
+	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, Jasypt_Encryptor encryptor, InputStream inStream)
 	{
 		this.encryptor 	= 	encryptor;
 		this.outQueue 	= 	outQueue;
