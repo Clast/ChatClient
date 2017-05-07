@@ -14,11 +14,11 @@ import javax.crypto.ShortBufferException;
 public class MessageParser extends Thread
 {
 	BlockingQueue<InternalMessage> 	outQueue 		= null;
-	private BouncyEncryption 		encryptor 		= null;
+	private Apache_Encryptor 		encryptor 		= null;
 	private BufferedReader 			in 				= null;
 	private InputStream 			inStream		= null;
 	
-	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, BouncyEncryption encryptor, InputStream inStream)
+	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, Apache_Encryptor encryptor, InputStream inStream)
 	{
 		this.encryptor 	= 	encryptor;
 		this.outQueue 	= 	outQueue;
@@ -34,7 +34,7 @@ public class MessageParser extends Thread
 			byte[] message = null;
 			message = readFromStream(inStream);
 			//try {mess = in.readLine();} catch (IOException e1) {e1.printStackTrace();}
-			try {mess = encryptor.Decrypt(message);} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException | IOException e1) {e1.printStackTrace();}
+			try {mess = encryptor.Decrypt(message);} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException e1) {e1.printStackTrace();}
 			String[] splitMess = mess.split("\u001e");
 			
 			switch(splitMess[0])
