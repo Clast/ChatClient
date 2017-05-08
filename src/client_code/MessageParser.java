@@ -12,12 +12,10 @@ import javax.crypto.ShortBufferException;
 public class MessageParser extends Thread
 {
 	BlockingQueue<InternalMessage> 	outQueue 		= null;
-	private BouncyEncryption 		encryptor 		= null;
 	private BufferedReader 			in 				= null;
 	
-	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, BouncyEncryption encryptor)
+	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in)
 	{
-		this.encryptor = encryptor;
 		this.outQueue 	= 	outQueue;
 		this.in			= 	in;
 	}

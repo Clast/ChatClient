@@ -97,19 +97,19 @@ public class Client{
             );
     	datagramSocket.receive(packet);
     
-    	String strdecrypt = packet.getData().toString();
+    	String strdecrypt = new String(packet.getData(),StandardCharsets.UTF_8 );
     	String [] str = strdecrypt.split(",");
    		cookie = Integer.parseInt(str[0]);
     	System.out.println(strdecrypt);
 
     	
-    	// establish TCP connection
-    	clientSocket = new Socket("localhost", Integer.parseInt(str[1]));
+    	// establish TCP connection    	String portAddr = str[1].replaceAll("[^0-9]","");    	    	System.out.println(str[1]);    	
+    	clientSocket = new Socket("localhost", Integer.parseInt(portAddr));
     	try {in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));} 	catch (IOException e) {System.out.println("In TCP_Welcome_Thread: Unable to create Buffered Reader");e.printStackTrace();}
 		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 						catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
 		out.println("CONNECT\u001e" + cookie);
 
-		System.out.println(in.readLine().getBytes());
+		System.out.println(in.readLine());
     	serverConnect = true;
     	return 1;
     }
@@ -117,7 +117,7 @@ public class Client{
     	System.out.println("User DNE");
     	// exit
     	datagramSocket.receive(packet);
-    	String strdecrypt = packet.getData().toString();
+    	String strdecrypt = new String(packet.getData(),StandardCharsets.UTF_8 );
     	System.out.println(strdecrypt);
     	return -1;
     	
@@ -237,7 +237,7 @@ public class Client{
 	}
 	*/
 	
-	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out,BouncyEncryption encryptor ) throws InterruptedException, IOException
+	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out) throws InterruptedException, IOException
 	{
 		boolean isChatting = true;
 		while(isChatting)
@@ -307,13 +307,13 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 			if(a.sendLogin(username) > 0)
 			{
 				connected 				= true;
-				a.message_parser_thread = new MessageParser(a.actionQueue, a.in,null);
+				a.message_parser_thread = new MessageParser(a.actionQueue, a.in);
 				a.cli_thread			= new CLI_Thread(a.actionQueue);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
 				
 				while(a.connected)
-				{
+				{					System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"														+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      -> Log out of the current user");
 					InternalMessage temp = a.actionQueue.take();
 					
 					if(temp.isInternal())
@@ -343,7 +343,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 						case"CHAT_STARTED":	a.currentChatPartner 	= temp.getClient();
 											a.currentSessID			= temp.getSessionID();
 											System.out.println("Chat session " + a.currentSessID + " with " + a.currentChatPartner + " has begun.");
-											a.chat_state_machine(a.actionQueue,a.out,null);
+											a.chat_state_machine(a.actionQueue,a.out);
 											break;
 											
 						case"UNREACHABLE": 	System.out.println("User " + a.currentChatPartner + " is unreachable.");
