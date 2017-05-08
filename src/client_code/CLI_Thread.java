@@ -39,7 +39,8 @@ public class CLI_Thread extends Thread
 								break;
 			case"LOG OFF":		try {outQueue.put(new InternalMessage("LOG_OFF",null,null,null,true));} catch (InterruptedException e) {e.printStackTrace();}
 								break;
-			case"HELP":			System.out.println("Usage options as follows(Mixed case allowed):\n		Chat Request\n		Chat\n		History Req\n		end\n		Log Off\n		Help");
+			case"HELP":			try {outQueue.put(new InternalMessage("HELP",null,null,null,true));} catch (InterruptedException e) {e.printStackTrace();}
+								//System.out.println("Usage options as follows(Mixed case allowed):\n		Chat Request\n		Chat\n		History Req\n		end\n		Log Off\n		Help");
 								break;
 			default:			System.out.println("Command not recognized. Type \"help\" for usage options.");	
 								break;

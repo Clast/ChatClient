@@ -260,7 +260,7 @@ public class Client{
 										out = null;
 										in 	= null;
 										isChatting = false;
-										connected = false;
+										connected = false;																				// Interrupt the current threads so that they exit, which will allow us to create new threads for the next user										//Finish closing out resources										message_parser_thread	.interrupt();										cli_thread				.interrupt();										message_parser_thread 	= null;										cli_thread 				= null;										clientSocket			.close();
 										break;
 					case "END_REQUEST":	out.println(temp.getAction() + "\u001e" + currentSessID);
 										isChatting = false;
@@ -311,9 +311,9 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 				a.cli_thread			= new CLI_Thread(a.actionQueue);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
-				
+				//Print inital options the User can do				System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"													+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"													+  "          Log Off      -> Log out of the current user");				
 				while(a.connected)
-				{					System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"														+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      -> Log out of the current user");
+				{					
 					InternalMessage temp = a.actionQueue.take();
 					
 					if(temp.isInternal())
@@ -332,8 +332,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 													a.in		.close();
 													a.out 		= null;
 													a.in 		= null;
-													connected 	= false;
-													break;
+													connected 	= false;																										a.message_parser_thread	.interrupt();													a.cli_thread				.interrupt();													a.message_parser_thread 	= null;													a.cli_thread 				= null;													a.clientSocket			.close();													break;
 						}
 					}
 					else
