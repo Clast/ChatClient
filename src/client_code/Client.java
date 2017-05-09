@@ -42,7 +42,7 @@ public class Client{
 	private BlockingQueue<InternalMessage> 	actionQueue 			= 	new LinkedBlockingQueue<InternalMessage>();
 	boolean 								inChat					=	false;
 	private	String							currentSessID			= 	null;
-	private String							currentChatPartner		= 	null;		private static Hashtable userDB = new Hashtable<>();	private static String userDBfile = "DB.txt";
+	private String							currentChatPartner		= 	null;		private byte[] key = null;		private static Hashtable userDB = new Hashtable<>();	private static String userDBfile = "DB.txt";
 
 	Client ()throws SocketException, UnknownHostException	{
 		buffer = new byte[1024];
@@ -357,5 +357,5 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 		//a.sendLogin("UserA");
 		//a.chatRequest();
 		}
-	}	public void loadDB(String file)		{	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}	}}
+	}	public void loadDB(String file)		{	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}			}		public void genKey(int rand, int keyValue) throws NoSuchAlgorithmException	{		StringBuilder sb = new StringBuilder();		sb.append(rand);		sb.append(keyValue);		String passwordToHash = sb.toString();				    String generatedPassword = null;	    	        // Create MessageDigest instance for MD5	        MessageDigest md = MessageDigest.getInstance("MD5");	        //Add password bytes to digest	        md.update(passwordToHash.getBytes());	        //Get the hash's bytes 	        byte[] bytes = md.digest();	        this.key = bytes;	        //This bytes[] has bytes in decimal format;	        //Convert it to hexadecimal format	        StringBuilder sb2 = new StringBuilder();	        for(int i=0; i< bytes.length ;i++)	        {	            sb2.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));	        }	        generatedPassword = sb2.toString();	        System.out.println(generatedPassword);	        	       // System.out.println(this.key.length);						}}
 
