@@ -306,7 +306,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 			{
 				connected 				= true;
 				a.message_parser_thread = new MessageParser(a.actionQueue, a.in);
-				a.cli_thread			= new CLI_Thread(a.actionQueue);
+				a.cli_thread			= new CLI_Thread(a.actionQueue, a.inChat);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
 				//Print inital options the User can do				System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"													+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"													+  "          Log Off      -> Log out of the current user\n"													+  "          Help         -> Commands you can use");				

@@ -6,12 +6,15 @@ import java.util.concurrent.BlockingQueue;
 
 public class CLI_Thread extends Thread
 {
-	private Scanner 			in 					= new Scanner(System.in);
+
+	private Scanner 				in 				= new Scanner(System.in);
 	BlockingQueue<InternalMessage> 	outQueue 		= null;
+	boolean							inChat			= false;
 	
-	public CLI_Thread(BlockingQueue<InternalMessage> outQueue)
+	public CLI_Thread(BlockingQueue<InternalMessage> outQueue, boolean inChat)
 	{
 		this.outQueue = outQueue;
+		this.inChat = inChat;
 	}
 
 	public void run()
@@ -23,10 +26,18 @@ public class CLI_Thread extends Thread
 			
 			switch(input)
 			{
-			case"CHAT REQUEST":	System.out.println("Enter the user to connect to: ");
-								String user = in.nextLine();
-								try {outQueue.put(new InternalMessage("CHAT_REQUEST",null,null,user,true));} catch (InterruptedException e) {e.printStackTrace();}
-								break;
+			case"CHAT REQUEST":	if(!inChat)
+									{
+										System.out.println("Enter the user to connect to: ");
+										String user = in.nextLine();
+										try {outQueue.put(new InternalMessage("CHAT_REQUEST",null,null,user,true));} catch (InterruptedException e) {e.printStackTrace();}
+										break;
+									}
+								else
+									{
+										System.out.println("Already in a chat session");
+										break;
+									}
 			case"CHAT":			System.out.println("Enter message: ");
 								String message = in.nextLine();
 								try {outQueue.put(new InternalMessage(input,message,null,null,true));} catch (InterruptedException e) {e.printStackTrace();}
