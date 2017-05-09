@@ -96,7 +96,7 @@ public class Client{
             );
     	datagramSocket.receive(packet);
     
-    	String strdecrypt = decrypt(new String(packet.getData(),StandardCharsets.UTF_8 ));
+    	String strdecrypt = new String(packet.getData(),StandardCharsets.UTF_8 );
     	String [] str = strdecrypt.split(",");
    		cookie = Integer.parseInt(str[0]);
     	System.out.println(strdecrypt);
@@ -116,7 +116,7 @@ public class Client{
     	System.out.println("User DNE");
     	// exit
     	datagramSocket.receive(packet);
-    	String strdecrypt = decrypt(new String(packet.getData(),StandardCharsets.UTF_8 ));
+    	String strdecrypt = new String(packet.getData(),StandardCharsets.UTF_8 );
     	System.out.println(strdecrypt);
     	return -1;
     	
