@@ -27,7 +27,7 @@ public class Client{
 	private byte[] 							buffer;
 	private String 							username 				= 	null;
 	private String 							clientID;
-	private int 							secretkey 				= 	123456;
+	private int 							secretkey;
 	//private BouncyEncryption 				encryptor 				= 	null;
 	private int 							cookie;
 	private static boolean 					connected;
@@ -52,7 +52,7 @@ public class Client{
 	}
 
 	public int sendLogin(String user)throws IOException, NoSuchAlgorithmException, ShortBufferException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException{
-		// send "Hello" msg to SERVER
+		// send "Hello" msg to SERVER				if(user.equals("UserA"))			secretkey = 123456;		else if(user.equals("UserB"))			secretkey = 789012;		else if(user.equals("UserC"))			secretkey = 135711;
 		System.out.println("Sending HELLO");
 		byte[] buffer = user.getBytes();
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 4445);
@@ -265,7 +265,7 @@ public class Client{
 										isChatting = false;																				System.out.println("Chat session with \"" + currentChatPartner + "\" has ended");
 										break;
 					case "HISTORY_REQ":	out.println(temp.getAction() + "\u001e" + temp.getClient());
-										break;					case "HELP":		System.out.println("Commands: Chat			-> Attempt to begin a chat session with specified user\n"														+  "          History Req  	-> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      	-> Log out of the current user\n"														+  "          End Request	-> End the current chat session");										break;
+										break;					case "HELP":		System.out.println("Commands: Chat			-> Attempt to begin a chat session with specified user\n"														+  "          History Req  	-> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      	-> Log out of the current user\n"														+  "          End			-> End the current chat session");										break;
 					}
 				}
 				else
@@ -283,9 +283,7 @@ public class Client{
 					case "HISTORY_RESP":	System.out.println(temp.getData());
 											break;
 					}
-				}
-			
-			
+				}
 		}
 	}
 	
@@ -310,7 +308,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 				a.cli_thread			= new CLI_Thread(a.actionQueue);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
-				//Print inital options the User can do				System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"													+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"													+  "          Log Off      -> Log out of the current user");				
+				//Print inital options the User can do				System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"													+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"													+  "          Log Off      -> Log out of the current user\n"													+  "          Help         -> Commands you can use");				
 				while(a.connected)
 				{					
 					InternalMessage temp = a.actionQueue.take();
