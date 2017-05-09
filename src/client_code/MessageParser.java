@@ -6,18 +6,25 @@ import java.io.PrintWriter;
 import java.util.concurrent.BlockingQueue;
 
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.ShortBufferException;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+
 public class MessageParser extends Thread
 {
-	BlockingQueue<InternalMessage> 	outQueue 		= null;
-	private BufferedReader 			in 				= null;
+	BlockingQueue<InternalMessage> 			outQueue 		= null;
+	private BufferedReader 					in 				= null;
+	private static Cipher					cipher			= null;
+	private static Cipher					dcipher			= null;
 	
-	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in)
+	public MessageParser(BlockingQueue<InternalMessage> outQueue,BufferedReader in, Cipher cipher, Cipher dcipher)
 	{
 		this.outQueue 	= 	outQueue;
 		this.in			= 	in;
+		this.cipher		= 	cipher;
+		this.dcipher	=	dcipher;
 	}
 	
 	public void run()
@@ -26,7 +33,7 @@ public class MessageParser extends Thread
 		{
 			//String decryptMess = null;
 			String mess = null;
-			try {mess = in.readLine();} catch (IOException e1) {System.out.println("In Message_Parser: Socket closed/Message failed to be recieved");return;}
+			try {mess = decrypt(in.readLine());} catch (IOException | IllegalBlockSizeException | BadPaddingException e1) {System.out.println("In Message_Parser: Socket closed/Message failed to be recieved");return;}
 			//try {decryptMess = encryptor.Decrypt(mess.getBytes());} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException | IOException e1) {e1.printStackTrace();}
 			String[] splitMess = mess.split("\u001e");
 			
@@ -44,5 +51,13 @@ public class MessageParser extends Thread
 								break;
 			}
 		}
+	}
+	
+	public static String decrypt(String strToDecrypt) throws IllegalBlockSizeException, BadPaddingException
+	{
+		byte[] encryptedTextByte = Base64.decode(strToDecrypt);
+		byte[] decryptedByte = dcipher.doFinal(encryptedTextByte);
+		String decryptedText = new String(decryptedByte);
+		return decryptedText;
 	}
 }

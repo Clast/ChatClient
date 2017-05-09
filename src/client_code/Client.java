@@ -96,7 +96,7 @@ public class Client{
             );
     	datagramSocket.receive(packet);
     
-    	String strdecrypt = new String(packet.getData(),StandardCharsets.UTF_8 );
+    	String strdecrypt = decrypt(new String(packet.getData(),StandardCharsets.UTF_8 ));
     	String [] str = strdecrypt.split(",");
    		cookie = Integer.parseInt(str[0]);
     	System.out.println(strdecrypt);
@@ -116,7 +116,7 @@ public class Client{
     	System.out.println("User DNE");
     	// exit
     	datagramSocket.receive(packet);
-    	String strdecrypt = new String(packet.getData(),StandardCharsets.UTF_8 );
+    	String strdecrypt = decrypt(new String(packet.getData(),StandardCharsets.UTF_8 ));
     	System.out.println(strdecrypt);
     	return -1;
     	
@@ -236,7 +236,7 @@ public class Client{
 	}
 	*/
 	
-	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out) throws InterruptedException, IOException
+	public void chat_state_machine(BlockingQueue<InternalMessage> actionQueue, PrintWriter out) throws InterruptedException, IOException, IllegalBlockSizeException, BadPaddingException
 	{
 		boolean isChatting = true;
 		while(isChatting)
@@ -250,10 +250,10 @@ public class Client{
 					//Messages from user
 					switch(temp.getAction())
 					{
-					case "CHAT":		out.println(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData());
+					case "CHAT":		out.println(encrypt(temp.getAction() + "\u001e" +  currentSessID + "\u001e" + temp.getData()));
 										break;
-					case "LOG_OFF":		out.println(temp.getAction() + "\u001e" + currentSessID);
-										out.println("DISCONNECT");
+					case "LOG_OFF":		out.println(encrypt(temp.getAction() + "\u001e" + currentSessID));
+										out.println(encrypt("DISCONNECT"));
 										out	.close();
 										in	.close();
 										out = null;
@@ -261,10 +261,10 @@ public class Client{
 										isChatting = false;
 										connected = false;																				// Interrupt the current threads so that they exit, which will allow us to create new threads for the next user										//Finish closing out resources										message_parser_thread	.interrupt();										cli_thread				.interrupt();										message_parser_thread 	= null;										cli_thread 				= null;										clientSocket			.close();
 										break;
-					case "END_REQUEST":	out.println(temp.getAction() + "\u001e" + currentSessID);
+					case "END_REQUEST":	out.println(encrypt(temp.getAction() + "\u001e" + currentSessID));
 										isChatting = false;																				System.out.println("Chat session with \"" + currentChatPartner + "\" has ended");
 										break;
-					case "HISTORY_REQ":	out.println(temp.getAction() + "\u001e" + temp.getClient());
+					case "HISTORY_REQ":	out.println(encrypt(temp.getAction() + "\u001e" + temp.getClient()));
 										break;					case "HELP":		System.out.println("Commands: Chat			-> Attempt to begin a chat session with specified user\n"														+  "          History Req  	-> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      	-> Log out of the current user\n"														+  "          End			-> End the current chat session");										break;
 					}
 				}
@@ -304,7 +304,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 			if(a.sendLogin(username) > 0)
 			{
 				connected 				= true;
-				a.message_parser_thread = new MessageParser(a.actionQueue, a.in);
+				a.message_parser_thread = new MessageParser(a.actionQueue, a.in, cipher, dcipher);
 				a.cli_thread			= new CLI_Thread(a.actionQueue, a.inChat);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
@@ -317,14 +317,14 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 					{
 						switch(temp.getAction())
 						{
-							case "CHAT_REQUEST":	a.out.println(temp.getAction() + "\u001e" + temp.getClient());
+							case "CHAT_REQUEST":	a.out.println(encrypt(temp.getAction() + "\u001e" + temp.getClient()));
 													a.currentChatPartner = temp.getClient();
 													break;
 	
-							case "HISTORY_REQ":		a.out.println(temp.getAction() + "\u001e" + temp.getClient());
+							case "HISTORY_REQ":		a.out.println(encrypt(temp.getAction() + "\u001e" + temp.getClient()));
 													break;
 
-							case "LOG_OFF":			a.out.println("DISCONNECT");
+							case "LOG_OFF":			a.out.println(encrypt("DISCONNECT"));
 													a.out		.close();
 													a.in		.close();
 													a.out 		= null;
