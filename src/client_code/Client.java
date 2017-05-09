@@ -27,7 +27,7 @@ public class Client{
 	private byte[] 							buffer;
 	private String 							username 				= 	null;
 	private String 							clientID;
-	private int 							secretkey 				= 	123456;
+	private int 							secretkey 				= 	789012;
 	//private BouncyEncryption 				encryptor 				= 	null;
 	private int 							cookie;
 	private static boolean 					connected;
