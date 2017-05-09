@@ -83,7 +83,7 @@ public class Client{
 	
 		MessageDigest md = MessageDigest.getInstance("MD5");
     	md.update(password);	
-    	byte[] challenge = new byte[1024];
+    	byte[] challenge = new byte[1024];    	genKey(rand, secretkey);
     	challenge = md.digest();
     
     	DatagramPacket cresponse = new DatagramPacket(
