@@ -33,7 +33,13 @@ public class MessageParser extends Thread
 		{
 			//String decryptMess = null;
 			String mess = null;
-			try {mess = decrypt(in.readLine());} catch (IOException | IllegalBlockSizeException | BadPaddingException e1) {System.out.println("In Message_Parser: Socket closed/Message failed to be recieved");return;}
+			try {mess = decrypt(in.readLine());} 
+				catch (IOException | IllegalBlockSizeException | BadPaddingException e1) {System.out.println("In Message_Parser: Socket closed/Message failed to be recieved");
+					try {outQueue.put(new InternalMessage("LOG_OFF",null,null,null,true));} 
+						catch (InterruptedException e) {e.printStackTrace();
+							return;}
+								return;
+						}
 			//try {decryptMess = encryptor.Decrypt(mess.getBytes());} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException | IOException e1) {e1.printStackTrace();}
 			String[] splitMess = mess.split("\u001e");
 			

@@ -45,7 +45,7 @@ public class Client{
 
 	Client ()throws SocketException, UnknownHostException	{
 		buffer = new byte[1024];
-		datagramSocket = new DatagramSocket();				address = InetAddress.getByName("10.182.65.187");
+		datagramSocket = new DatagramSocket();		address = InetAddress.getLocalHost();		//address = InetAddress.getByName("10.182.65.187");
 		//address = InetAddress.getByName("129.110.242.100");
 		packet = new DatagramPacket(buffer, buffer.length, address, 8888);
 		scanner = new Scanner (System.in);
@@ -259,7 +259,7 @@ public class Client{
 										out = null;
 										in 	= null;
 										isChatting = false;
-										connected = false;																				// Interrupt the current threads so that they exit, which will allow us to create new threads for the next user										//Finish closing out resources										message_parser_thread	.interrupt();										cli_thread				.interrupt();										message_parser_thread 	= null;										cli_thread 				= null;										clientSocket			.close();
+										connected = false;																				// Interrupt the current threads so that they exit, which will allow us to create new threads for the next user										//Finish closing out resources										message_parser_thread	.interrupt();										cli_thread				.interrupt();										message_parser_thread 	= null;										cli_thread 				= null;										clientSocket			.close();										System.out.println("You have been logged off");
 										break;
 					case "END_REQUEST":	out.println(encrypt(temp.getAction() + "\u001e" + currentSessID));
 										isChatting = false;																				System.out.println("Chat session with \"" + currentChatPartner + "\" has ended");
@@ -329,7 +329,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 													a.in		.close();
 													a.out 		= null;
 													a.in 		= null;
-													connected 	= false;																										a.message_parser_thread	.interrupt();													a.cli_thread				.interrupt();													a.message_parser_thread 	= null;													a.cli_thread 				= null;													a.clientSocket			.close();													break;							case "HELP":		System.out.println("Commands: Chat Request -> Attempt to begin a chat session with specified user\n"																+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"																+  "          Log Off      -> Log out of the current user");													break;
+													connected 	= false;																										a.message_parser_thread		.interrupt();													a.cli_thread				.interrupt();													a.message_parser_thread 	= null;													a.cli_thread 				= null;													a.clientSocket				.close();																										System.out.println("You have been logged off");													break;							case "HELP":		System.out.println("Commands: Chat Request -> Attempt to begin a chat session with specified user\n"																+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"																+  "          Log Off      -> Log out of the current user");													break;
 						}
 					}
 					else
