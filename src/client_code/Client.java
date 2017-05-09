@@ -1,5 +1,5 @@
 package client_code;
-import java.io.*;import java.util.Random;import java.util.Scanner;
+import java.io.*;import java.util.Hashtable;import java.util.Random;import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.math.BigInteger;
@@ -30,7 +30,7 @@ public class Client{
 	private int 							secretkey 				= 	123456;
 	//private BouncyEncryption 				encryptor 				= 	null;
 	private int 							cookie;
-	private static boolean 						connected;
+	private static boolean 					connected;
 	private boolean 						serverConnect;
 	private Scanner 						scanner 				= 	new Scanner(System.in);
 	private MessageParser 					message_parser_thread 	= 	null;
@@ -41,12 +41,12 @@ public class Client{
 	private BlockingQueue<InternalMessage> 	actionQueue 			= 	new LinkedBlockingQueue<InternalMessage>();
 	boolean 								inChat					=	false;
 	private	String							currentSessID			= 	null;
-	private String							currentChatPartner		= 	null;
+	private String							currentChatPartner		= 	null;		private static Hashtable userDB = new Hashtable<>();	private static String userDBfile = "DB.txt";
 
-	Client ()throws SocketException, UnknownHostException{
+	Client ()throws SocketException, UnknownHostException	{
 		buffer = new byte[1024];
-		datagramSocket = new DatagramSocket();
-		address = InetAddress.getLocalHost();
+		datagramSocket = new DatagramSocket();				address = InetAddress.getByName("10.176.65.178");
+		//address = InetAddress.getByName("129.110.242.100");
 		packet = new DatagramPacket(buffer, buffer.length, address, 8888);
 		scanner = new Scanner (System.in);
 	}
@@ -103,7 +103,7 @@ public class Client{
 
     	
     	// establish TCP connection    	String portAddr = str[1].replaceAll("[^0-9]","");    	    	System.out.println(str[1]);    	
-    	clientSocket = new Socket("localhost", Integer.parseInt(portAddr));
+    	clientSocket = new Socket(address, Integer.parseInt(portAddr));
     	try {in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));} 	catch (IOException e) {System.out.println("In TCP_Welcome_Thread: Unable to create Buffered Reader");e.printStackTrace();}
 		try {out = new PrintWriter(clientSocket.getOutputStream(), true);} 						catch (IOException e) {System.out.println("In TCP_Welcome_Thread: unable to create PrintWriter");e.printStackTrace();}
 		out.println("CONNECT\u001e" + cookie);
@@ -262,7 +262,7 @@ public class Client{
 										connected = false;																				// Interrupt the current threads so that they exit, which will allow us to create new threads for the next user										//Finish closing out resources										message_parser_thread	.interrupt();										cli_thread				.interrupt();										message_parser_thread 	= null;										cli_thread 				= null;										clientSocket			.close();
 										break;
 					case "END_REQUEST":	out.println(temp.getAction() + "\u001e" + currentSessID);
-										isChatting = false;
+										isChatting = false;																				System.out.println("Chat session with \"" + currentChatPartner + "\" has ended");
 										break;
 					case "HISTORY_REQ":	out.println(temp.getAction() + "\u001e" + temp.getClient());
 										break;					case "HELP":		System.out.println("Commands: Chat			-> Attempt to begin a chat session with specified user\n"														+  "          History Req  	-> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      	-> Log out of the current user\n"														+  "          End Request	-> End the current chat session");										break;
@@ -358,5 +358,5 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 		//a.sendLogin("UserA");
 		//a.chatRequest();
 		}
-	}public void loadDB(String file){	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}	}}
+	}	public void loadDB(String file)		{	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}	}}
 

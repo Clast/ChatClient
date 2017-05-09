@@ -26,7 +26,7 @@ public class MessageParser extends Thread
 		{
 			//String decryptMess = null;
 			String mess = null;
-			try {mess = in.readLine();} catch (IOException e1) {e1.printStackTrace();}
+			try {mess = in.readLine();} catch (IOException e1) {System.out.println("In Message_Parser: Socket closed/Message failed to be recieved");return;}
 			//try {decryptMess = encryptor.Decrypt(mess.getBytes());} catch (ShortBufferException | IllegalBlockSizeException | BadPaddingException | IOException e1) {e1.printStackTrace();}
 			String[] splitMess = mess.split("\u001e");
 			
