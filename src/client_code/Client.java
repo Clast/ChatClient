@@ -1,6 +1,5 @@
 package client_code;
-import java.io.*;
-import java.util.Scanner;
+import java.io.*;import java.util.Random;import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.math.BigInteger;
@@ -266,7 +265,7 @@ public class Client{
 										isChatting = false;
 										break;
 					case "HISTORY_REQ":	out.println(temp.getAction() + "\u001e" + temp.getClient());
-										break;
+										break;					case "HELP":		System.out.println("Commands: Chat			-> Attempt to begin a chat session with specified user\n"														+  "          History Req  	-> Attempt to retrieve the chat history between you and the specified user\n"														+  "          Log Off      	-> Log out of the current user\n"														+  "          End Request	-> End the current chat session");										break;
 					}
 				}
 				else
@@ -332,7 +331,7 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 													a.in		.close();
 													a.out 		= null;
 													a.in 		= null;
-													connected 	= false;																										a.message_parser_thread	.interrupt();													a.cli_thread				.interrupt();													a.message_parser_thread 	= null;													a.cli_thread 				= null;													a.clientSocket			.close();													break;
+													connected 	= false;																										a.message_parser_thread	.interrupt();													a.cli_thread				.interrupt();													a.message_parser_thread 	= null;													a.cli_thread 				= null;													a.clientSocket			.close();													break;							case "HELP":		System.out.println("Commands: Chat Request -> Attempt to begin a chat session with specified user\n"																+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"																+  "          Log Off      -> Log out of the current user");													break;
 						}
 					}
 					else
@@ -358,6 +357,6 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 		}
 		//a.sendLogin("UserA");
 		//a.chatRequest();
-	}
-}}
+		}
+	}public void loadDB(String file){	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}	}}
 
