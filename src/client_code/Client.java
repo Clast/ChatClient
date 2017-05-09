@@ -12,10 +12,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.BadPaddingException;import javax.crypto.Cipher;import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.ShortBufferException;
+import javax.crypto.ShortBufferException;import javax.crypto.spec.SecretKeySpec;import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 
 public class Client{
@@ -42,11 +41,11 @@ public class Client{
 	private BlockingQueue<InternalMessage> 	actionQueue 			= 	new LinkedBlockingQueue<InternalMessage>();
 	boolean 								inChat					=	false;
 	private	String							currentSessID			= 	null;
-	private String							currentChatPartner		= 	null;		private byte[] key = null;		private static Hashtable userDB = new Hashtable<>();	private static String userDBfile = "DB.txt";
+	private String							currentChatPartner		= 	null;		private static Cipher cipher = null;	private static Cipher dcipher = null;		private byte[] key = null;		private static Hashtable userDB = new Hashtable<>();	private static String userDBfile = "DB.txt";
 
 	Client ()throws SocketException, UnknownHostException	{
 		buffer = new byte[1024];
-		datagramSocket = new DatagramSocket();				address = InetAddress.getByName("10.176.65.178");
+		datagramSocket = new DatagramSocket();				address = InetAddress.getByName("10.182.65.187");
 		//address = InetAddress.getByName("129.110.242.100");
 		packet = new DatagramPacket(buffer, buffer.length, address, 8888);
 		scanner = new Scanner (System.in);
@@ -83,8 +82,8 @@ public class Client{
 	
 		MessageDigest md = MessageDigest.getInstance("MD5");
     	md.update(password);	
-    	byte[] challenge = new byte[1024];    	genKey(rand, secretkey);
-    	challenge = md.digest();
+    	byte[] challenge = new byte[1024];    	genKey(rand, secretkey);    	initCiphers();
+    	challenge = md.digest();    	    	String test = "This is a test string";    	/*test = encrypt(test);    	System.out.println(test);    	    	test = decrypt(test);    	System.out.println(test);*/
     
     	DatagramPacket cresponse = new DatagramPacket(
     	        challenge, challenge.length, address, 4445
@@ -309,8 +308,8 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 				a.cli_thread			= new CLI_Thread(a.actionQueue, a.inChat);
 				a.message_parser_thread	.start();
 				a.cli_thread			.start();
-				//Print inital options the User can do				System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"													+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"													+  "          Log Off      -> Log out of the current user\n"													+  "          Help         -> Commands you can use");				
-				while(a.connected)
+				//Print inital options the User can do				System.out.println("You are Connected.\nCommands: Chat Request -> Attempt to begin a chat session with specified user\n"													+  "          History Req  -> Attempt to retrieve the chat history between you and the specified user\n"													+  "          Log Off      -> Log out of the current user\n"													+  "          Help         -> Commands you can use");												String test = "This is a test string";				test = encrypt(test);								a.out.println(test);				System.out.println("Sent" + test);				
+				while(a.connected)				
 				{					
 					InternalMessage temp = a.actionQueue.take();
 					
@@ -357,5 +356,5 @@ public static void main(String[] args) throws UnknownHostException, SocketExcept
 		//a.sendLogin("UserA");
 		//a.chatRequest();
 		}
-	}	public void loadDB(String file)		{	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}			}		public void genKey(int rand, int keyValue) throws NoSuchAlgorithmException	{		StringBuilder sb = new StringBuilder();		sb.append(rand);		sb.append(keyValue);		String passwordToHash = sb.toString();				    String generatedPassword = null;	    	        // Create MessageDigest instance for MD5	        MessageDigest md = MessageDigest.getInstance("MD5");	        //Add password bytes to digest	        md.update(passwordToHash.getBytes());	        //Get the hash's bytes 	        byte[] bytes = md.digest();	        this.key = bytes;	        //This bytes[] has bytes in decimal format;	        //Convert it to hexadecimal format	        StringBuilder sb2 = new StringBuilder();	        for(int i=0; i< bytes.length ;i++)	        {	            sb2.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));	        }	        generatedPassword = sb2.toString();	        System.out.println(generatedPassword);	        	       // System.out.println(this.key.length);						}}
+	}	public void loadDB(String file)		{	try (BufferedReader br = new BufferedReader(new FileReader(file))) {		String sCurrentLine;		while ((sCurrentLine = br.readLine()) != null) {			String userID = sCurrentLine;			int secretKey = Integer.parseInt(br.readLine());						userDB.put(userID, secretKey);		}			} catch (IOException e) {		e.printStackTrace();	}			}		public void genKey(int rand, int keyValue) throws NoSuchAlgorithmException	{		StringBuilder sb = new StringBuilder();		sb.append(rand);		sb.append(keyValue);		String passwordToHash = sb.toString();				    String generatedPassword = null;	    	        // Create MessageDigest instance for MD5	        MessageDigest md = MessageDigest.getInstance("MD5");	        //Add password bytes to digest	        md.update(passwordToHash.getBytes());	        //Get the hash's bytes 	        byte[] bytes = md.digest();	        this.key = bytes;	        //This bytes[] has bytes in decimal format;	        //Convert it to hexadecimal format	        StringBuilder sb2 = new StringBuilder();	        for(int i=0; i< bytes.length ;i++)	        {	            sb2.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));	        }	        generatedPassword = sb2.toString();	        System.out.println(generatedPassword);	        	       // System.out.println(this.key.length);						}		public void initCiphers()	{		 try	        {			 	            this.cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");	            final SecretKeySpec secretKey = new SecretKeySpec(this.key, "AES");	            cipher.init(Cipher.ENCRYPT_MODE, secretKey);	            	            this.dcipher = Cipher.getInstance("AES/ECB/PKCS5Padding");	            dcipher.init(Cipher.DECRYPT_MODE, secretKey);	            	            	            	        }	        catch (Exception e)	        {	           e.printStackTrace();	        }	}		public static String encrypt(String strToEncrypt) throws IllegalBlockSizeException, BadPaddingException	{		byte[] plainTextByte = strToEncrypt.getBytes();		byte[] encryptedByte = cipher.doFinal(plainTextByte);		String encryptedText = Base64.encode(encryptedByte);		return encryptedText;	}		public static String decrypt(String strToDecrypt) throws IllegalBlockSizeException, BadPaddingException	{		byte[] encryptedTextByte = Base64.decode(strToDecrypt);		byte[] decryptedByte = dcipher.doFinal(encryptedTextByte);		String decryptedText = new String(decryptedByte);		return decryptedText;	}}
 
